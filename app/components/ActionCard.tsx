@@ -8,7 +8,7 @@ interface Props {
    img: {
       src: string;
       alt: string;
-   }
+   };
 }
 
 export default function ActionCard(props: Props) {
