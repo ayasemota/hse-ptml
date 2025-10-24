@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: #F9FAFB;
+  --color-white: #ffffff;
+  --color-black: #3A3A3A;
+  --color-orange: #FF8D6E;
+  --color-green: #116542;
+  --font-poppins: var(--font-poppins);
+  --font-inter: var(--font-inter);
+}
