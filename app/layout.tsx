@@ -17,7 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PSE-PTML",
+  title: "HSE-PTML",
   description: "Health Safety and Environment Incident Report Taking App",
 };
 
