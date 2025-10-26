@@ -73,7 +73,6 @@ export default function NewFormPage() {
    return (
       <div className="min-h-screen bg-gray-50 print:bg-white font-poppins">
          <div className="print:hidden"><Header /></div>
-
          <div className="max-w-5xl mx-auto px-6 py-8">
             <Link href="/dashboard" className="flex items-center text-green-700 hover:text-green-800 mb-6 print:hidden">
                <ChevronLeft className="w-5 h-5" /><span className="ml-1">Back to Dashboard</span>
@@ -97,7 +96,7 @@ export default function NewFormPage() {
 
                <div className="mb-8">
                   <label className="block text-sm font-semibold text-green-700 mb-3">INCIDENT CONSEQUENCES (Kindly check all that apply)</label>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                      {consequenceOptions.map(opt => (
                         <label key={opt} className="flex items-center space-x-2 cursor-pointer">
                            <input type="checkbox" checked={formData.consequences.includes(opt)} onChange={() => handleConsequenceToggle(opt)} className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500" />
@@ -147,7 +146,7 @@ export default function NewFormPage() {
                   <label className="block text-sm font-semibold text-green-700 mb-2">TEAM MEMBERS (OPTIONAL)</label>
                   {formData.teamMembers.map((m, i) => (
                      <div key={i} className="flex gap-2 mb-2">
-                        <input type="text" value={m} onChange={(e) => handleInputChange('teamMembers', formData.teamMembers.map((tm, idx) => idx === i ? e.target.value : tm))} placeholder="Team member name" className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent print:border-0" />
+                        <input type="text" value={m} onChange={(e) => handleInputChange('teamMembers', formData.teamMembers.map((tm, idx) => idx === i ? e.target.value : tm))} placeholder="Team member name" className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent print:border-0 w-full" />
                         {formData.teamMembers.length > 1 && (
                            <button onClick={() => handleInputChange('teamMembers', formData.teamMembers.filter((_, idx) => idx !== i))} className="text-red-600 hover:text-red-700 print:hidden"><X className="w-5 h-5" /></button>
                         )}
@@ -214,6 +213,22 @@ export default function NewFormPage() {
                         <input type={inp.type} value={formData[inp.field as keyof typeof formData] as string} onChange={(e) => handleInputChange(inp.field, e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent print:border-0" />
                      </div>
                   ))}
+               </div>
+
+               <div className="mb-8 print:hidden">
+                  <label className="block text-sm font-semibold text-green-700 mb-2">ATTACHMENTS (Optional)</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                     <div className="flex flex-col items-center">
+                        <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="text-gray-600 mb-2">Kindly upload an attachment (images, videos or documents)</p>
+                        <input type="file" multiple className="hidden" id="file-upload" accept="image/*,video/*,.pdf,.doc,.docx" />
+                        <label htmlFor="file-upload" className="inline-block bg-blue-500 text-white py-2 px-6 rounded-lg cursor-pointer hover:bg-blue-600 transition-colors">
+                           Browse Document
+                        </label>
+                     </div>
+                  </div>
                </div>
 
                <div className="flex flex-wrap gap-4 print:hidden">
