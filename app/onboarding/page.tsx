@@ -1,35 +1,16 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, FormEvent } from "react";
 import { useOnboardingAuth } from "../hooks/useAuth";
 
 export default function OnboardingPage() {
-   const [error, setError] = useState("");
-   const { login } = useOnboardingAuth();
+   const [username, setUsername] = useState("");
+   const [password, setPassword] = useState("");
+   const { login, error, loading } = useOnboardingAuth();
 
-   useEffect(() => {
-      document.title = "HSE-PTML | Login";
-   }, []);
-
-   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      setError("");
-
-      const formData = new FormData(e.currentTarget);
-      const username = formData.get("username") as string;
-      const password = formData.get("password") as string;
-
-      const isValidCredentials =
-         username === process.env.NEXT_PUBLIC_USERNAME &&
-         password === process.env.NEXT_PUBLIC_PASSWORD;
-
-      if (isValidCredentials) {
-         login();
-      } else {
-         setError(
-            "Invalid credentials. Please check username and/or password (case-sensitive)."
-         );
-      }
+      await login(username, password);
    };
 
    return (
@@ -39,9 +20,7 @@ export default function OnboardingPage() {
       >
          <div className="m-6 px-10 py-6 rounded-lg backdrop-blur-md border border-white/20 text-white shadow-xl">
             <div className="sm:min-w-[350px] max-w-[350px]">
-               <h1 className="text-white text-center text-2xl font-bold mb-6">
-                  LOGIN
-               </h1>
+               <h1 className="text-white text-center text-2xl font-bold mb-6">LOGIN</h1>
 
                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <label htmlFor="username">Username</label>
@@ -49,9 +28,11 @@ export default function OnboardingPage() {
                      type="text"
                      id="username"
                      name="username"
-                     placeholder="Username"
+                     value={username}
+                     onChange={(e) => setUsername(e.target.value)}
                      required
-                     className="p-4 rounded w-full h-[60px] text-black bg-bg"
+                     disabled={loading}
+                     className="p-4 rounded w-full h-[60px] text-black bg-bg disabled:opacity-50"
                   />
 
                   <label htmlFor="password">Password</label>
@@ -59,9 +40,11 @@ export default function OnboardingPage() {
                      type="password"
                      id="password"
                      name="password"
-                     placeholder="Password"
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
                      required
-                     className="p-4 rounded w-full h-[60px] text-black bg-bg"
+                     disabled={loading}
+                     className="p-4 rounded w-full h-[60px] text-black bg-bg disabled:opacity-50"
                   />
 
                   {error && (
@@ -72,9 +55,10 @@ export default function OnboardingPage() {
 
                   <button
                      type="submit"
-                     className="cursor-pointer mt-4 bg-green text-white py-2 px-4 rounded hover:opacity-90 transition-opacity"
+                     disabled={loading}
+                     className="cursor-pointer mt-4 bg-green text-white py-2 px-4 rounded hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                     LOGIN
+                     {loading ? "Logging in..." : "LOGIN"}
                   </button>
                </form>
             </div>

@@ -143,7 +143,7 @@ export default function NewFormPage() {
                         </div>
                      ))}
                   </div>
-                  <label className="block text-sm font-semibold text-green-700 mb-2">TEAM MEMBERS (OPTIONAL)</label>
+                  <label className="block text-sm font-semibold text-green-700 mb-2">{"TEAM MEMBERS (OPTIONAL)"}</label>
                   {formData.teamMembers.map((m, i) => (
                      <div key={i} className="flex gap-2 mb-2">
                         <input type="text" value={m} onChange={(e) => handleInputChange('teamMembers', formData.teamMembers.map((tm, idx) => idx === i ? e.target.value : tm))} placeholder="Team member name" className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent print:border-0 w-full" />
