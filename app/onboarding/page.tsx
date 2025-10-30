@@ -28,11 +28,12 @@ export default function OnboardingPage() {
                      type="text"
                      id="username"
                      name="username"
+                     placeholder="Username"
                      value={username}
                      onChange={(e) => setUsername(e.target.value)}
                      required
                      disabled={loading}
-                     className="p-4 rounded w-full h-[60px] text-black bg-bg disabled:opacity-50"
+                     className="p-4 rounded w-full h-[60px] text-black bg-gray-50 disabled:opacity-50"
                   />
 
                   <label htmlFor="password">Password</label>
@@ -40,11 +41,12 @@ export default function OnboardingPage() {
                      type="password"
                      id="password"
                      name="password"
+                     placeholder="Password"
                      value={password}
                      onChange={(e) => setPassword(e.target.value)}
                      required
                      disabled={loading}
-                     className="p-4 rounded w-full h-[60px] text-black bg-bg disabled:opacity-50"
+                     className="p-4 rounded w-full h-[60px] text-black bg-gray-50 disabled:opacity-50"
                   />
 
                   {error && (

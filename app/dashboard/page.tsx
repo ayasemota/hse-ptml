@@ -6,7 +6,6 @@ import ActionCard from "../components/ActionCard";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import Link from "next/link";
-// import { useRouter } from "next/navigation";
 import { incidentService } from "../services/incidentService";
 import { IncidentReport } from "../types/incident";
 
@@ -29,7 +28,6 @@ const ACTION_CARDS = [
 
 export default function DashboardPage() {
    const { logout } = useDashboardAuth();
-   // const router = useRouter();
    const [recentReports, setRecentReports] = useState<IncidentReport[]>([]);
    const [loading, setLoading] = useState(true);
 
@@ -54,7 +52,7 @@ export default function DashboardPage() {
 
          <section className="container mx-auto px-6">
             <h1 className="text-center mt-16 text-green font-bold text-2xl">
-               Health Safety and Environment (HSE) Department
+               {"Health Safety and Environment (HSE) Department"}
             </h1>
 
             <div className="w-full mt-20 grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -65,28 +63,25 @@ export default function DashboardPage() {
                ))}
             </div>
 
-            <div className="mt-14 p-8 rounded-[10px] w-full bg-[#EDEDED]">
+            <div className="mt-14 p-8 rounded-[10px] w-full bg-gray">
                <h2 className="font-semibold text-2xl mb-10">Report Library</h2>
 
                {loading ? (
                   <p className="text-gray-500">Loading reports...</p>
                ) : recentReports.length === 0 ? (
                   <div className="flex flex-wrap items-center justify-between gap-6">
-                     <p className="text-[#B3B3B3]">You have no recorded/uploaded report.</p>
-                     <Link href="/reports">
-                           <button className="bg-black text-white py-2.5 px-9 rounded-[10px] hover:bg-gray-800 transition-colors cursor-pointer">View All</button>
-                     </Link>
+                     <p className="text-gray-light">You have no recorded/uploaded report.</p>
                   </div>
                ) : (
                   <>
                      <div className="grid gap-4 mb-6">
                         {recentReports.map((report) => (
                            <div key={report.id} className="bg-white p-4 rounded-lg border border-gray-200">
-                              <div className="flex justify-between items-start">
-                                 <div>
+                              <div className="flex flex-wrap gap-4 justify-between items-start">
+                                 <div className="flex flex-col gap-2">
                                     <h3 className="font-semibold text-lg">Case #{report.caseNumber}</h3>
                                     <p className="text-sm text-gray-600">Location: {report.incidentLocation}</p>
-                                    <p className="text-sm text-gray-500">Date: {new Date(report.dateOfIncident).toLocaleDateString()}</p>
+                                    <p className="text-sm text-gray-500">Date Submitted: {new Date(report.createdAt).toLocaleString()}</p>
                                  </div>
                                  <Link href={`/reports/${report.id}`}>
                                     <button className="text-green hover:underline text-sm cursor-pointer">View Details</button>
@@ -95,12 +90,13 @@ export default function DashboardPage() {
                            </div>
                         ))}
                      </div>
-                     <div className="flex justify-end">
-                        <Link href="/reports">
-                                    <button className="text-green hover:underline text-sm cursor-pointer">View Details</button>
-                           <button className="bg-black cursor-pointer text-white py-2.5 px-9 rounded-[10px] hover:bg-gray-800 transition-colors">View All</button>
-                        </Link>
-                     </div>
+                     {recentReports.length >= 1 && (
+                        <div className="flex justify-end">
+                           <Link href="/reports">
+                              <button className="bg-black cursor-pointer text-white py-2.5 px-9 rounded-[10px] hover:bg-gray-800 transition-colors">View All</button>
+                           </Link>
+                        </div>
+                     )}
                   </>
                )}
             </div>

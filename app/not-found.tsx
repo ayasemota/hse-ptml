@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
    return (
-      <div className="min-h-screen bg-linear-to-b from-bg to-white flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-linear-to-b from-gray-50 to-white flex flex-col items-center justify-center px-6">
          <div className="text-center space-y-8">
             <Image src="/logo.png" alt="PTML Logo" width={233} height={73} className="mx-auto" priority />
 

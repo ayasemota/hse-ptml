@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Plus, X, Printer, ChevronLeft } from 'lucide-react';
+import { Plus, X, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
-import { auth } from '../../lib/firebase';
+import { app, auth } from '../../lib/firebase';
 import { incidentService } from '../services/incidentService';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function NewFormPage() {
    const router = useRouter();
@@ -20,7 +21,7 @@ export default function NewFormPage() {
       dateOfIncident: '', dateOfReport: new Date().toISOString().split('T')[0], caseNumber: 'HSE-', consequences: [] as string[],
       incidentLocation: '', typeOfFacility: '', typeOfEquipment: '', incidentCost: '', lostProfit: '',
       teamLeader: '', picJobTitle: '', teamMembers: [''], summary: '', primaryCause: '', recommendations: '',
-      dateApproved: '', personInCharge: ''
+      dateApproved: '', personInCharge: '', otherConsequence: ''
    });
 
    const [actionItems, setActionItems] = useState([
@@ -30,29 +31,29 @@ export default function NewFormPage() {
 
    const [showDialog, setShowDialog] = useState(false);
    const [uploadError, setUploadError] = useState('');
+   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+   const [isSaving, setIsSaving] = useState(false);
 
    const handleInputChange = (field: string, value: string | string[]) => setFormData(prev => ({ ...prev, [field]: value }));
 
    const handleCaseNumberChange = (value: string) => {
       let formatted = value.toUpperCase();
-      
+
       if (!formatted.startsWith('HSE-')) {
          formatted = 'HSE-';
       }
-      
+
       const afterPrefix = formatted.slice(4);
-      
       const digitsOnly = afterPrefix.replace(/\D/g, '');
-      
+
       if (digitsOnly.length <= 3) {
          formatted = `HSE-${digitsOnly}`;
       } else if (digitsOnly.length <= 6) {
          formatted = `HSE-${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3)}`;
       } else {
-         // Limit to 6 digits total
          formatted = `HSE-${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3, 6)}`;
       }
-      
+
       setFormData(prev => ({ ...prev, caseNumber: formatted }));
    };
 
@@ -69,6 +70,7 @@ export default function NewFormPage() {
 
       setUploadError('');
       const maxSize = 1 * 1024 * 1024;
+      const newFiles: File[] = [];
 
       for (let i = 0; i < files.length; i++) {
          if (files[i].size > maxSize) {
@@ -76,7 +78,14 @@ export default function NewFormPage() {
             e.target.value = '';
             return;
          }
+         newFiles.push(files[i]);
       }
+
+      setUploadedFiles([...uploadedFiles, ...newFiles]);
+   };
+
+   const removeFile = (index: number) => {
+      setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
    };
 
    const handleSave = async () => {
@@ -85,19 +94,46 @@ export default function NewFormPage() {
          return;
       }
 
+      setIsSaving(true);
+
       try {
          const user = auth.currentUser;
          if (!user) {
             alert('You must be logged in to submit a report');
             router.push('/onboarding');
+            setIsSaving(false);
             return;
          }
+
+         const uploadedUrls: string[] = [];
+
+         if (uploadedFiles.length > 0) {
+            try {
+               const storage = getStorage(app);
+
+               for (const file of uploadedFiles) {
+                  const timestamp = Date.now();
+                  const storageRef = ref(storage, `incident-reports/${formData.caseNumber}/${timestamp}-${file.name}`);
+
+                  await uploadBytes(storageRef, file);
+                  const url = await getDownloadURL(storageRef);
+                  uploadedUrls.push(url);
+               }
+            } catch (uploadError) {
+               console.error('Error uploading files:', uploadError);
+               alert('Failed to upload images. Saving report without attachments.');
+            }
+         }
+
+         const consequences = formData.consequences.includes('Others') && formData.otherConsequence
+            ? [...formData.consequences.filter(c => c !== 'Others'), `Others: ${formData.otherConsequence}`]
+            : formData.consequences;
 
          await incidentService.createReport({
             dateOfIncident: formData.dateOfIncident,
             dateOfReport: formData.dateOfReport,
             caseNumber: formData.caseNumber,
-            incidentConsequences: formData.consequences,
+            incidentConsequences: consequences,
             incidentLocation: formData.incidentLocation,
             typeOfFacility: formData.typeOfFacility,
             typeOfEquipment: formData.typeOfEquipment,
@@ -117,6 +153,7 @@ export default function NewFormPage() {
             })),
             dateApproved: formData.dateApproved,
             personInCharge: formData.personInCharge,
+            attachments: uploadedUrls,
             createdAt: new Date().toISOString(),
             createdBy: user.uid
          });
@@ -125,6 +162,8 @@ export default function NewFormPage() {
       } catch (error) {
          console.error('Save error:', error);
          alert('Failed to save report. Please try again.');
+      } finally {
+         setIsSaving(false);
       }
    };
 
@@ -133,13 +172,14 @@ export default function NewFormPage() {
          dateOfIncident: '', dateOfReport: new Date().toISOString().split('T')[0], caseNumber: 'HSE-', consequences: [],
          incidentLocation: '', typeOfFacility: '', typeOfEquipment: '', incidentCost: '', lostProfit: '',
          teamLeader: '', picJobTitle: '', teamMembers: [''], summary: '', primaryCause: '', recommendations: '',
-         dateApproved: '', personInCharge: ''
+         dateApproved: '', personInCharge: '', otherConsequence: ''
       });
       setActionItems([
          { action: 'Incident alert, Investigation and Photograph', owner: 'HSE Department', date: '' },
          { action: 'Incident alert and Notification', owner: '', date: '' }
       ]);
       setUploadError('');
+      setUploadedFiles([]);
       setShowDialog(false);
    };
 
@@ -185,6 +225,12 @@ export default function NewFormPage() {
                         </label>
                      ))}
                   </div>
+                  {formData.consequences.includes('Others') && (
+                     <div className="mt-4">
+                        <label className="block text-sm font-semibold text-green-700 mb-2">Please specify:</label>
+                        <input type="text" value={formData.otherConsequence} onChange={(e) => handleInputChange('otherConsequence', e.target.value)} placeholder="Specify other consequence" className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+                     </div>
+                  )}
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -229,11 +275,11 @@ export default function NewFormPage() {
                      <div key={i} className="flex gap-2 mb-2">
                         <input type="text" value={m} onChange={(e) => handleInputChange('teamMembers', formData.teamMembers.map((tm, idx) => idx === i ? e.target.value : tm))} placeholder="Team member name" className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent print:border-0 w-full" />
                         {formData.teamMembers.length > 1 && (
-                           <button onClick={() => handleInputChange('teamMembers', formData.teamMembers.filter((_, idx) => idx !== i))} className="text-red-600 hover:text-red-700 print:hidden cursor-pointer"><X className="w-5 h-5" /></button>
+                           <button type="button" onClick={() => handleInputChange('teamMembers', formData.teamMembers.filter((_, idx) => idx !== i))} className="text-red-600 hover:text-red-700 print:hidden cursor-pointer"><X className="w-5 h-5" /></button>
                         )}
                      </div>
                   ))}
-                  <button onClick={() => handleInputChange('teamMembers', [...formData.teamMembers, ''])} className="mt-2 flex items-center text-green-600 hover:text-green-700 print:hidden cursor-pointer"><Plus className="w-4 h-4 mr-1" />Add Team Member</button>
+                  <button type="button" onClick={() => handleInputChange('teamMembers', [...formData.teamMembers, ''])} className="mt-2 flex items-center text-green-600 hover:text-green-700 print:hidden cursor-pointer"><Plus className="w-4 h-4 mr-1" />Add Team Member</button>
                </div>
 
                {[
@@ -273,7 +319,7 @@ export default function NewFormPage() {
                                  </td>
                                  <td className="border border-gray-300 px-4 py-2 print:hidden">
                                     {actionItems.length > 1 && (
-                                       <button onClick={() => setActionItems(actionItems.filter((_, idx) => idx !== i))} className="text-red-600 hover:text-red-700 cursor-pointer"><X className="w-4 h-4" /></button>
+                                       <button type="button" onClick={() => setActionItems(actionItems.filter((_, idx) => idx !== i))} className="text-red-600 hover:text-red-700 cursor-pointer"><X className="w-4 h-4" /></button>
                                     )}
                                  </td>
                               </tr>
@@ -281,7 +327,7 @@ export default function NewFormPage() {
                         </tbody>
                      </table>
                   </div>
-                  <button onClick={() => setActionItems([...actionItems, { action: '', owner: '', date: '' }])} className="mt-3 flex items-center text-green-600 hover:text-green-700 print:hidden cursor-pointer"><Plus className="w-4 h-4 mr-1" />Add Action Item</button>
+                  <button type="button" onClick={() => setActionItems([...actionItems, { action: '', owner: '', date: '' }])} className="mt-3 flex items-center text-green-600 hover:text-green-700 print:hidden cursor-pointer"><Plus className="w-4 h-4 mr-1" />Add Action Item</button>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -303,23 +349,45 @@ export default function NewFormPage() {
                         <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
-                        <p className="text-gray-600 mb-2">Kindly upload an attachment (images, videos or documents)</p>
+                        <p className="text-gray-600 mb-2">Kindly upload an attachment (images only)</p>
                         <p className="text-sm text-gray-500 mb-3">Maximum file size: 1MB per file</p>
                         {uploadError && <p className="text-red-600 text-sm mb-3">{uploadError}</p>}
-                        <input type="file" multiple className="hidden" id="file-upload" accept="image/*,video/*,.pdf,.doc,.docx" onChange={handleFileUpload} />
-                        <label htmlFor="file-upload" className="inline-block bg-blue-500 text-white py-2 px-6 rounded-lg cursor-pointer hover:bg-blue-600 transition-colors">
+                        <input type="file" multiple className="hidden" id="file-upload" accept="image/*" onChange={handleFileUpload} />
+                        {/* <label htmlFor="file-upload" className="inline-block bg-blue-500 text-white py-2 px-6 rounded-lg cursor-pointer hover:bg-blue-600 transition-colors">
                            Browse Document
-                        </label>
+                        </label> */}
                      </div>
                   </div>
+
+                  {uploadedFiles.length > 0 && (
+                     <div className="mt-4">
+                        <p className="text-sm font-semibold text-green-700 mb-2">Uploaded Files:</p>
+                        <div className="grid gap-2">
+                           {uploadedFiles.map((file, index) => (
+                              <div key={index} className="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                                 <div className="flex items-center gap-3">
+                                    <img src={URL.createObjectURL(file)} alt={file.name} className="w-12 h-12 object-cover rounded" />
+                                    <span className="text-sm text-gray-700">{file.name}</span>
+                                    <span className="text-xs text-gray-500">({(file.size / 1024).toFixed(2)} KB)</span>
+                                 </div>
+                                 <button type="button" onClick={() => removeFile(index)} className="text-red-600 hover:text-red-700 cursor-pointer">
+                                    <X className="w-5 h-5" />
+                                 </button>
+                              </div>
+                           ))}
+                        </div>
+                     </div>
+                  )}
                </div>
 
                <div className="flex flex-wrap gap-4 print:hidden">
-                  <button onClick={() => window.print()} className="flex items-center bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg transition-colors cursor-pointer">
-                     <Printer className="w-5 h-5 mr-2" />Print Report
-                  </button>
-                  <button onClick={handleSave} className="flex items-center bg-black hover:bg-gray-800 text-white py-3 px-6 rounded-lg transition-colors cursor-pointer">
-                     Save Report
+                  <button 
+                     type="button"
+                     onClick={handleSave} 
+                     disabled={isSaving}
+                     className="flex items-center bg-black hover:bg-gray-800 text-white py-3 px-6 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                     {isSaving ? 'Saving...' : 'Save Report'}
                   </button>
                </div>
             </div>
@@ -328,16 +396,16 @@ export default function NewFormPage() {
          {showDialog && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 print:hidden overflow-hidden">
                <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
-                  <h3 className="text-2xl font-bold text-green-700 mb-4">Report Saved Successfully!</h3>
-                  <p className="text-gray-600 mb-6">Your incident report has been saved. Would you like to fill another report?</p>
+                  <h3 className="text-2xl font-bold text-green-700 mb-4">Saved Successfully!</h3>
+                  <p className="text-gray-600 mb-6">Your incident report has been saved.</p>
                   <div className="flex flex-col gap-3">
-                     <button onClick={resetForm} className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg transition-colors cursor-pointer">
+                     <button type="button" onClick={resetForm} className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg transition-colors cursor-pointer">
                         Fill Another Report
                      </button>
-                     <button onClick={() => router.push('/reports')} className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg transition-colors cursor-pointer">
+                     <button type="button" onClick={() => router.push('/reports')} className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg transition-colors cursor-pointer">
                         View Reports
                      </button>
-                     <button onClick={() => router.push('/dashboard')} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-6 rounded-lg transition-colors cursor-pointer">
+                     <button type="button" onClick={() => router.push('/dashboard')} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-6 rounded-lg transition-colors cursor-pointer">
                         Back to Dashboard
                      </button>
                   </div>

@@ -4,7 +4,7 @@ export default function Header() {
    return (
       <>
          <header className="bg-white border-b border-gray-200 py-4 px-6">
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div className="container mx-auto flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                <div className="flex justify-center items-center space-x-3">
                   <Image src="/logo.png" alt="Logo" width={233} height={73} priority />
                </div>

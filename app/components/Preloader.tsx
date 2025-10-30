@@ -20,7 +20,7 @@ export default function Preloader() {
 
    return (
       <div
-         className={`fixed inset-0 z-9999 flex items-center justify-center bg-bg transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"
+         className={`fixed inset-0 z-9999 flex items-center justify-center bg-gray-50 transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"
             }`}
       >
          <div className="relative flex flex-col items-center gap-6">

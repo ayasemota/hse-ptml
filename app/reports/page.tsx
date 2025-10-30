@@ -49,7 +49,7 @@ export default function ReportsPage() {
       <Navbar onLogout={logout} />
 
       <section className="container mx-auto px-6 py-12">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-green">Report Library</h1>
           <button onClick={() => router.push("/dashboard")} className="bg-gray-500 hover:bg-gray-600 text-white py-2.5 px-8 rounded-lg transition-colors cursor-pointer">Back to Dashboard</button>
         </div>
@@ -73,7 +73,7 @@ export default function ReportsPage() {
                     <p className="text-gray-600">Incident Date: {new Date(report.dateOfIncident).toLocaleDateString()}</p>
                     <p className="text-gray-600">Location: {report.incidentLocation}</p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <button onClick={() => router.push(`/reports/${report.id}`)} className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg transition-colors cursor-pointer">View</button>
                     <button onClick={() => handleDelete(report.id!)} className="bg-red-500 hover:bg-red-600 text-white py-2 px-6 rounded-lg transition-colors cursor-pointer">Delete</button>
                   </div>

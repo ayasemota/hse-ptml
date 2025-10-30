@@ -39,6 +39,19 @@ export default function ReportDetailPage() {
       }
    };
 
+   const handleDelete = async (id: string) => {
+      if (!confirm("Are you sure you want to delete this report?")) return;
+
+      try {
+         await incidentService.deleteReport(id);
+         router.push("/reports");
+         alert("Report deleted successfully");
+      } catch (error) {
+         console.error("Error deleting report:", error);
+         alert("Failed to delete report");
+      }
+   };
+
    if (loading) {
       return (
          <main className="font-poppins min-h-screen">
@@ -62,19 +75,20 @@ export default function ReportDetailPage() {
          </div>
 
          <section className="container mx-auto px-6 py-12">
-            <div className="flex justify-between items-center mb-6 print:hidden">
+            <div className="flex flex-wrap gap-4 justify-between items-center mb-6 print:hidden">
                <Link href="/reports" className="flex items-center text-green-700 hover:text-green-800">
                   <ChevronLeft className="w-5 h-5" />
                   <span className="ml-1">Back to Reports</span>
                </Link>
-               <button onClick={() => window.print()} className="flex items-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg transition-colors cursor-pointer">
-                  <Printer className="w-5 h-5 mr-2" />Print Report
-               </button>
+               <div className="flex flex-wrap gap-4">
+                  <button onClick={() => window.print()} className="flex items-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg transition-colors cursor-pointer">
+                     <Printer className="w-5 h-5 mr-2" />Print Report
+                  </button>
+                  <button onClick={() => handleDelete(report.id!)} className="bg-red-500 hover:bg-red-600 text-white py-2 px-6 rounded-lg transition-colors cursor-pointer">Delete</button>               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-8 print:shadow-none">
                <h1 className="text-3xl font-bold text-green mb-8">INCIDENT REPORT FORM</h1>
-
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   <div>
                      <label className="block text-sm font-semibold text-green-700 mb-2">Date of Incident:</label>

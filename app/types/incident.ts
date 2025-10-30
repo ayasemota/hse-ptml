@@ -23,6 +23,7 @@ export interface IncidentReport {
    }[];
    dateApproved: string;
    personInCharge: string;
+   attachments?: string[];
    createdAt: string;
    createdBy: string;
 }
