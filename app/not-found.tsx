@@ -8,14 +8,14 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
    return (
-      <div className="min-h-screen bg-linear-to-b from-bg to-white flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-linear-to-b from-gray-50 to-white flex flex-col items-center justify-center px-6">
          <div className="text-center space-y-8">
             <Image src="/logo.png" alt="PTML Logo" width={233} height={73} className="mx-auto" priority />
 
             <div className="space-y-4">
                <h1 className="text-[120px] font-bold text-green leading-none">404</h1>
                <h2 className="text-3xl font-semibold text-gray-800">Page Not Found</h2>
-               <p className="text-gray-600 text-lg max-w-md mx-auto">The page you're looking for doesn't exist or has been moved.</p>
+               <p className="text-gray-600 text-lg max-w-md mx-auto">{"The page you're looking for doesn't exist or has been moved."}</p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
