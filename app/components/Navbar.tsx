@@ -60,9 +60,9 @@ export default function Navbar({ onLogout }: NavbarProps) {
                >
                   <p id="logout-confirm-title" className="text-gray-700 text-sm mb-4 text-center">Are you sure you want to log out?</p>
                   <div className="flex justify-center gap-3">
-                     <button onClick={() => setShowConfirm(false)} className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1.5 px-4 rounded-md text-sm transition-colors">No
+                     <button onClick={() => setShowConfirm(false)} className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1.5 px-4 rounded-md text-sm transition-colors cursor-pointer">No
                      </button>
-                     <button onClick={handleConfirmLogout} className="bg-green hover:opacity-80 transition-opacity text-white py-1.5 px-4 rounded-md text-sm">Yes</button>
+                     <button onClick={handleConfirmLogout} className="bg-green hover:opacity-80 transition-opacity text-white py-1.5 px-4 rounded-md text-sm cursor-pointer">Yes</button>
                   </div>
                </div>
             )}

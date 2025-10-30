@@ -21,7 +21,7 @@ export default function UploadFormPage() {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Upload Existing Reports</h2>
             <p className="text-gray-600 mb-8">This feature is coming soon. You can create new reports using the form.</p>
             <Link href="/newform">
-               <button className="bg-green-600 text-white py-3 px-8 rounded-lg hover:bg-green-700">Create New Report Instead</button>
+               <button className="bg-green-600 text-white py-3 px-8 rounded-lg hover:bg-green-700 cursor-pointer">Create New Report Instead</button>
             </Link>
          </div>
       </div>
