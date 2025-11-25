@@ -2,7 +2,7 @@ import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, 
 import { db } from "../../lib/firebase";
 import { IncidentReport } from "../types/incident";
 
-const COLLECTION_NAME = "incidentReports";
+const COLLECTION_NAME = "hseIncidentReports";
 
 export const incidentService = {
    async createReport(report: Omit<IncidentReport, "id">) {
